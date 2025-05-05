@@ -1,4 +1,5 @@
 # RetellAI MCP Server
+[![smithery badge](https://smithery.ai/badge/@abhaybabbar/retellai-mcp-server)](https://smithery.ai/server/@abhaybabbar/retellai-mcp-server)
 
 This is a Model Context Protocol (MCP) server implementation for RetellAI, allowing AI assistants to interact with RetellAI's voice services.
 
