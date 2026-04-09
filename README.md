@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/abhaybabbar-retellai-mcp-server-badge.png)](https://mseep.ai/app/abhaybabbar-retellai-mcp-server)
+
 # RetellAI MCP Server
 
 This is a Model Context Protocol (MCP) server implementation for RetellAI, allowing AI assistants to interact with RetellAI's voice services.
