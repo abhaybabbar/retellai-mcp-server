@@ -11,23 +11,24 @@ import {
   transformAgentOutput,
   transformUpdateAgentInput,
 } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, createZeroArgToolHandler } from "./utils.js";
 
 export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
-  server.tool(
+  server.registerTool(
     "list_agents",
-    "Lists all Retell agents",
-    {},
-    createToolHandler(async () => {
+    { description: "Lists all Retell agents" },
+    createZeroArgToolHandler(async () => {
       const agents = await retellClient.agent.list();
       return agents.map(transformAgentOutput);
     })
   );
 
-  server.tool(
+  server.registerTool(
     "create_agent",
-    "Creates a new Retell agent",
-    CreateAgentInputSchema.shape,
+    {
+      description: "Creates a new Retell agent",
+      inputSchema: CreateAgentInputSchema,
+    },
     createToolHandler(async (data) => {
       const createAgentDto = transformAgentInput(data);
       const agent = await retellClient.agent.create(createAgentDto);
@@ -35,10 +36,12 @@ export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_agent",
-    "Gets a Retell agent by ID",
-    GetAgentInputSchema.shape,
+    {
+      description: "Gets a Retell agent by ID",
+      inputSchema: GetAgentInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const agent = await retellClient.agent.retrieve(data.agentId);
@@ -53,10 +56,12 @@ export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "update_agent",
-    "Updates an existing Retell agent",
-    UpdateAgentInputSchema.shape,
+    {
+      description: "Updates an existing Retell agent",
+      inputSchema: UpdateAgentInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const agentId = data.agentId;
@@ -78,10 +83,12 @@ export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "delete_agent",
-    "Deletes a Retell agent",
-    GetAgentInputSchema.shape,
+    {
+      description: "Deletes a Retell agent",
+      inputSchema: GetAgentInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         await retellClient.agent.delete(data.agentId);
@@ -96,10 +103,12 @@ export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_agent_versions",
-    "Gets all versions of a Retell agent",
-    GetAgentInputSchema.shape,
+    {
+      description: "Gets all versions of a Retell agent",
+      inputSchema: GetAgentInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const versions = await retellClient.agent.getVersions(data.agentId);

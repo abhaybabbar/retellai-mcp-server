@@ -11,26 +11,27 @@ import {
   transformUpdateRetellLLMInput,
   transformRetellLLMOutput,
 } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, createZeroArgToolHandler } from "./utils.js";
 
 export const registerRetellLLMTools = (
   server: McpServer,
   retellClient: Retell
 ) => {
-  server.tool(
+  server.registerTool(
     "list_retell_llms",
-    "Lists all Retell LLMs",
-    {},
-    createToolHandler(async () => {
+    { description: "Lists all Retell LLMs" },
+    createZeroArgToolHandler(async () => {
       const llms = await retellClient.llm.list();
       return llms.map(transformRetellLLMOutput);
     })
   );
 
-  server.tool(
+  server.registerTool(
     "create_retell_llm",
-    "Creates a new Retell LLM",
-    CreateRetellLLMInputSchema.shape,
+    {
+      description: "Creates a new Retell LLM",
+      inputSchema: CreateRetellLLMInputSchema,
+    },
     createToolHandler(async (data) => {
       const createLLMDto = transformRetellLLMInput(data);
       const llm = await retellClient.llm.create(createLLMDto);
@@ -38,10 +39,12 @@ export const registerRetellLLMTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_retell_llm",
-    "Gets a Retell LLM by ID",
-    GetRetellLLMInputSchema.shape,
+    {
+      description: "Gets a Retell LLM by ID",
+      inputSchema: GetRetellLLMInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const llm = await retellClient.llm.retrieve(data.llmId);
@@ -56,10 +59,12 @@ export const registerRetellLLMTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "update_retell_llm",
-    "Updates an existing Retell LLM",
-    UpdateRetellLLMInputSchema.shape,
+    {
+      description: "Updates an existing Retell LLM",
+      inputSchema: UpdateRetellLLMInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const llmId = data.llmId;
@@ -73,10 +78,12 @@ export const registerRetellLLMTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "delete_retell_llm",
-    "Deletes a Retell LLM",
-    GetRetellLLMInputSchema.shape,
+    {
+      description: "Deletes a Retell LLM",
+      inputSchema: GetRetellLLMInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         await retellClient.llm.delete(data.llmId);

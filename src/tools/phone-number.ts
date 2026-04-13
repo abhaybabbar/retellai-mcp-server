@@ -7,26 +7,27 @@ import {
   UpdatePhoneNumberInputSchema,
 } from "../schemas/index.js";
 import { transformPhoneNumberOutput } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, createZeroArgToolHandler } from "./utils.js";
 
 export const registerPhoneNumberTools = (
   server: McpServer,
   retellClient: Retell
 ) => {
-  server.tool(
+  server.registerTool(
     "list_phone_numbers",
-    "Lists all Retell phone numbers",
-    {},
-    createToolHandler(async () => {
+    { description: "Lists all Retell phone numbers" },
+    createZeroArgToolHandler(async () => {
       const phoneNumbers = await retellClient.phoneNumber.list();
       return phoneNumbers.map(transformPhoneNumberOutput);
     })
   );
 
-  server.tool(
+  server.registerTool(
     "create_phone_number",
-    "Creates a new phone number",
-    CreatePhoneNumberInputSchema.shape,
+    {
+      description: "Creates a new phone number",
+      inputSchema: CreatePhoneNumberInputSchema,
+    },
     createToolHandler(async (data) => {
       const createPhoneNumberDto = {
         area_code: data.areaCode,
@@ -42,10 +43,12 @@ export const registerPhoneNumberTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_phone_number",
-    "Gets details of a specific phone number",
-    GetPhoneNumberInputSchema.shape,
+    {
+      description: "Gets details of a specific phone number",
+      inputSchema: GetPhoneNumberInputSchema,
+    },
     createToolHandler(async (data) => {
       const phoneNumber = await retellClient.phoneNumber.retrieve(
         data.phoneNumber
@@ -54,10 +57,12 @@ export const registerPhoneNumberTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "update_phone_number",
-    "Updates a phone number",
-    UpdatePhoneNumberInputSchema.shape,
+    {
+      description: "Updates a phone number",
+      inputSchema: UpdatePhoneNumberInputSchema,
+    },
     createToolHandler(async (data) => {
       const updatePhoneNumberDto = {
         inbound_agent_id: data.inboundAgentId,
@@ -73,10 +78,12 @@ export const registerPhoneNumberTools = (
     })
   );
 
-  server.tool(
+  server.registerTool(
     "delete_phone_number",
-    "Deletes a phone number",
-    GetPhoneNumberInputSchema.shape,
+    {
+      description: "Deletes a phone number",
+      inputSchema: GetPhoneNumberInputSchema,
+    },
     createToolHandler(async (data) => {
       await retellClient.phoneNumber.delete(data.phoneNumber);
       return {

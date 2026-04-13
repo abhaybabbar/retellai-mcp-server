@@ -19,10 +19,12 @@ import {
 import { createToolHandler } from "./utils.js";
 
 export const registerCallTools = (server: McpServer, retellClient: Retell) => {
-  server.tool(
+  server.registerTool(
     "create_phone_call",
-    "Creates a new phone call",
-    CreatePhoneCallInputSchema.shape,
+    {
+      description: "Creates a new phone call",
+      inputSchema: CreatePhoneCallInputSchema,
+    },
     createToolHandler(async (data) => {
       const createCallDto = transformPhoneCallInput(data);
       const call = await retellClient.call.createPhoneCall(createCallDto);
@@ -30,10 +32,12 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "create_web_call",
-    "Creates a new web call",
-    CreateWebCallInputSchema.shape,
+    {
+      description: "Creates a new web call",
+      inputSchema: CreateWebCallInputSchema,
+    },
     createToolHandler(async (data) => {
       const createCallDto = transformWebCallInput(data);
       const call = await retellClient.call.createWebCall(createCallDto);
@@ -41,10 +45,12 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_call",
-    "Gets a call by ID",
-    GetCallInputSchema.shape,
+    {
+      description: "Gets a call by ID",
+      inputSchema: GetCallInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const call = await retellClient.call.retrieve(data.callId);
@@ -59,10 +65,12 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "list_calls",
-    "Lists all calls",
-    ListCallsInputSchema.shape,
+    {
+      description: "Lists all calls",
+      inputSchema: ListCallsInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const listCallsDto = transformListCallsInput(data);
@@ -75,10 +83,12 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "update_call",
-    "Updates an existing call",
-    UpdateCallInputSchema.shape,
+    {
+      description: "Updates an existing call",
+      inputSchema: UpdateCallInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         const callId = data.callId;
@@ -95,10 +105,12 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "delete_call",
-    "Deletes a call",
-    DeleteCallInputSchema.shape,
+    {
+      description: "Deletes a call",
+      inputSchema: DeleteCallInputSchema,
+    },
     createToolHandler(async (data) => {
       try {
         await retellClient.call.delete(data.callId);

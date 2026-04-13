@@ -36,9 +36,9 @@ export const CreatePhoneCallInputSchema = z.object({
       "For this particular call, override the agent version used with this version"
     ),
   direction: z.enum(["inbound", "outbound"]).default("outbound"),
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
   retellLlmDynamicVariables: z
-    .record(z.string())
+    .record(z.string(), z.string())
     .optional()
     .describe("Dynamic variables to pass to the LLM in key-value pairs"),
   optOutSensitiveDataStorage: z.boolean().optional(),
@@ -48,9 +48,9 @@ export const CreatePhoneCallInputSchema = z.object({
 // Web Call Input Schema
 export const CreateWebCallInputSchema = z.object({
   agentId: z.string().describe("The ID of the agent to use for the call"),
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
   retellLlmDynamicVariables: z
-    .record(z.string())
+    .record(z.string(), z.string())
     .optional()
     .describe("Dynamic variables to pass to the LLM in key-value pairs"),
   optOutSensitiveDataStorage: z.boolean().optional(),
@@ -69,7 +69,7 @@ export const CallOutputSchema = z.object({
   agent_id: z.string(),
   version: z.number(),
   call_status: CallStatusSchema,
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
   start_timestamp: z.number().optional(),
   end_timestamp: z.number().optional(),
   transcript: z.string().optional(),
@@ -83,7 +83,7 @@ export const CallOutputSchema = z.object({
         .enum(["Negative", "Positive", "Neutral", "Unknown"])
         .optional(),
       call_successful: z.boolean().optional(),
-      custom_analysis_data: z.record(z.any()).optional(),
+      custom_analysis_data: z.record(z.string(), z.unknown()).optional(),
     })
     .optional(),
   call_cost: z
@@ -121,8 +121,8 @@ export const ListCallsInputSchema = z.object({
 // Update Call Input Schema
 export const UpdateCallInputSchema = z.object({
   callId: z.string().describe("The ID of the call to update"),
-  metadata: z.record(z.string()).optional(),
-  dynamicVariables: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
+  dynamicVariables: z.record(z.string(), z.string()).optional(),
 });
 
 // Delete Call Input Schema
@@ -438,7 +438,9 @@ export const GetKnowledgeBaseInputSchema = z.object({
 export const AddKnowledgeBaseSourceInputSchema = z.object({
   knowledgeBaseId: z.string().describe("The ID of the knowledge base"),
   sourceType: z.string().describe("Type of the source"),
-  sourceConfig: z.record(z.any()).describe("Configuration for the source"),
+  sourceConfig: z
+    .record(z.string(), z.unknown())
+    .describe("Configuration for the source"),
 });
 
 export const DeleteKnowledgeBaseSourceInputSchema = z.object({
@@ -584,7 +586,7 @@ export const CreateRetellLLMInputSchema = z.object({
               parameters: z
                 .object({
                   type: z.literal("object"),
-                  properties: z.record(z.any()),
+                  properties: z.record(z.string(), z.unknown()),
                   required: z.array(z.string()),
                 })
                 .optional(),
@@ -662,7 +664,7 @@ export const CreateRetellLLMInputSchema = z.object({
     .optional()
     .describe("First utterance said by the agent in the call"),
   default_dynamic_variables: z
-    .record(z.string())
+    .record(z.string(), z.string())
     .optional()
     .describe(
       "Default dynamic variables represented as key-value pairs of strings"
@@ -743,7 +745,7 @@ export const UpdateRetellLLMInputSchema = z.object({
   //   .optional(),
   // starting_state: z.string().nullable().optional(),
   begin_message: z.string().optional(),
-  default_dynamic_variables: z.record(z.string()).optional(),
+  default_dynamic_variables: z.record(z.string(), z.string()).optional(),
   knowledge_base_ids: z.array(z.string()).optional(),
 });
 
@@ -802,7 +804,7 @@ export const RetellLLMOutputSchema = z.object({
   //   .optional(),
   // starting_state: z.string().nullable().optional(),
   begin_message: z.string().nullable().optional(),
-  default_dynamic_variables: z.record(z.string()).nullable().optional(),
+  default_dynamic_variables: z.record(z.string(), z.string()).nullable().optional(),
   knowledge_base_ids: z.array(z.string()).nullable().optional(),
   last_modification_timestamp: z.number(),
 });
