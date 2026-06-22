@@ -67,12 +67,32 @@ export const transformCallOutput = (data: any) => {
 export const transformListCallsInput = (
   data: z.infer<typeof ListCallsInputSchema>
 ) => {
+  const filter_criteria: Record<string, unknown> = {};
+
+  if (data.agentId !== undefined) {
+    filter_criteria.agent = [{ agent_id: data.agentId }];
+  }
+
+  if (data.startTimestamp !== undefined) {
+    filter_criteria.start_timestamp = {
+      type: "number",
+      op: "ge",
+      value: data.startTimestamp,
+    };
+  }
+
+  if (data.endTimestamp !== undefined) {
+    filter_criteria.end_timestamp = {
+      type: "number",
+      op: "le",
+      value: data.endTimestamp,
+    };
+  }
+
   return {
-    agent_id: data.agentId,
-    start_timestamp: data.startTimestamp,
-    end_timestamp: data.endTimestamp,
+    ...(Object.keys(filter_criteria).length ? { filter_criteria } : {}),
     limit: data.limit,
-    offset: data.offset,
+    skip: data.offset,
   };
 };
 
@@ -95,37 +115,37 @@ export function transformAgentInput(
     voice_id: input.voice_id,
     agent_name: input.agent_name,
     voice_model: input.voice_model,
-    // fallback_voice_ids: input.fallback_voice_ids,
-    // voice_temperature: input.voice_temperature,
-    // voice_speed: input.voice_speed,
-    // volume: input.volume,
-    // responsiveness: input.responsiveness,
-    // interruption_sensitivity: input.interruption_sensitivity,
-    // enable_backchannel: input.enable_backchannel,
-    // backchannel_frequency: input.backchannel_frequency,
-    // backchannel_words: input.backchannel_words,
-    // reminder_trigger_ms: input.reminder_trigger_ms,
-    // reminder_max_count: input.reminder_max_count,
-    // ambient_sound: input.ambient_sound,
-    // ambient_sound_volume: input.ambient_sound_volume,
-    // language: input.language,
-    // webhook_url: input.webhook_url,
-    // boosted_keywords: input.boosted_keywords,
-    // enable_transcription_formatting: input.enable_transcription_formatting,
-    // opt_out_sensitive_data_storage: input.opt_out_sensitive_data_storage,
-    // opt_in_signed_url: input.opt_in_signed_url,
-    // pronunciation_dictionary: input.pronunciation_dictionary,
-    // normalize_for_speech: input.normalize_for_speech,
-    // end_call_after_silence_ms: input.end_call_after_silence_ms,
-    // max_call_duration_ms: input.max_call_duration_ms,
-    // enable_voicemail_detection: input.enable_voicemail_detection,
-    // voicemail_message: input.voicemail_message,
-    // voicemail_detection_timeout_ms: input.voicemail_detection_timeout_ms,
-    // post_call_analysis_data: input.post_call_analysis_data,
-    // post_call_analysis_model: input.post_call_analysis_model,
-    // begin_message_delay_ms: input.begin_message_delay_ms,
-    // ring_duration_ms: input.ring_duration_ms,
-    // stt_mode: input.stt_mode,
+    fallback_voice_ids: input.fallback_voice_ids,
+    voice_temperature: input.voice_temperature,
+    voice_speed: input.voice_speed,
+    volume: input.volume,
+    responsiveness: input.responsiveness,
+    interruption_sensitivity: input.interruption_sensitivity,
+    enable_backchannel: input.enable_backchannel,
+    backchannel_frequency: input.backchannel_frequency,
+    backchannel_words: input.backchannel_words,
+    reminder_trigger_ms: input.reminder_trigger_ms,
+    reminder_max_count: input.reminder_max_count,
+    ambient_sound: input.ambient_sound,
+    ambient_sound_volume: input.ambient_sound_volume,
+    language: input.language,
+    webhook_url: input.webhook_url,
+    boosted_keywords: input.boosted_keywords,
+    enable_transcription_formatting: input.enable_transcription_formatting,
+    opt_out_sensitive_data_storage: input.opt_out_sensitive_data_storage,
+    opt_in_signed_url: input.opt_in_signed_url,
+    pronunciation_dictionary: input.pronunciation_dictionary,
+    normalize_for_speech: input.normalize_for_speech,
+    end_call_after_silence_ms: input.end_call_after_silence_ms,
+    max_call_duration_ms: input.max_call_duration_ms,
+    enable_voicemail_detection: input.enable_voicemail_detection,
+    voicemail_message: input.voicemail_message,
+    voicemail_detection_timeout_ms: input.voicemail_detection_timeout_ms,
+    post_call_analysis_data: input.post_call_analysis_data,
+    post_call_analysis_model: input.post_call_analysis_model,
+    begin_message_delay_ms: input.begin_message_delay_ms,
+    ring_duration_ms: input.ring_duration_ms,
+    stt_mode: input.stt_mode,
   };
 }
 
@@ -305,16 +325,16 @@ export function transformRetellLLMInput(
   input: z.infer<typeof CreateRetellLLMInputSchema>
 ) {
   return {
-    // version: input.version,
+    version: input.version,
     model: input.model,
-    // s2s_model: input.s2s_model,
-    // model_temperature: input.model_temperature,
-    // model_high_priority: input.model_high_priority,
-    // tool_call_strict_mode: input.tool_call_strict_mode,
+    s2s_model: input.s2s_model,
+    model_temperature: input.model_temperature,
+    model_high_priority: input.model_high_priority,
+    tool_call_strict_mode: input.tool_call_strict_mode,
     general_prompt: input.general_prompt,
-    // general_tools: input.general_tools,
-    // states: input.states,
-    // starting_state: input.starting_state,
+    general_tools: input.general_tools as any,
+    states: input.states as any,
+    starting_state: input.starting_state,
     begin_message: input.begin_message,
     default_dynamic_variables: input.default_dynamic_variables,
     knowledge_base_ids: input.knowledge_base_ids,
@@ -339,9 +359,9 @@ export function transformUpdateRetellLLMInput(
     updateData.general_prompt = input.general_prompt;
   if (input.general_tools !== undefined)
     updateData.general_tools = input.general_tools;
-  // if (input.states !== undefined) updateData.states = input.states;
-  // if (input.starting_state !== undefined)
-  //   updateData.starting_state = input.starting_state;
+  if (input.states !== undefined) updateData.states = input.states;
+  if (input.starting_state !== undefined)
+    updateData.starting_state = input.starting_state;
   if (input.begin_message !== undefined)
     updateData.begin_message = input.begin_message;
   if (input.default_dynamic_variables !== undefined)
@@ -364,9 +384,9 @@ export function transformRetellLLMOutput(
     model_high_priority: llm.model_high_priority,
     tool_call_strict_mode: llm.tool_call_strict_mode,
     general_prompt: llm.general_prompt,
-    // general_tools: llm.general_tools,
-    // states: llm.states,
-    // starting_state: llm.starting_state,
+    general_tools: llm.general_tools,
+    states: llm.states,
+    starting_state: llm.starting_state,
     begin_message: llm.begin_message,
     default_dynamic_variables: llm.default_dynamic_variables,
     knowledge_base_ids: llm.knowledge_base_ids,

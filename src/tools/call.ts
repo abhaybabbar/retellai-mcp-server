@@ -16,7 +16,7 @@ import {
   transformListCallsInput,
   transformUpdateCallInput,
 } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, normalizeListItems } from "./utils.js";
 
 export const registerCallTools = (server: McpServer, retellClient: Retell) => {
   server.tool(
@@ -67,7 +67,7 @@ export const registerCallTools = (server: McpServer, retellClient: Retell) => {
       try {
         const listCallsDto = transformListCallsInput(data);
         const calls = await retellClient.call.list(listCallsDto);
-        return calls.map(transformCallOutput);
+        return normalizeListItems(calls).map(transformCallOutput);
       } catch (error: any) {
         console.error(`Error listing calls: ${error.message}`);
         throw error;

@@ -169,6 +169,165 @@ const AnalysisDataSchema = z.discriminatedUnion("type", [
   NumberAnalysisDataSchema,
 ]);
 
+const PronunciationDictionaryItemSchema = z.object({
+  word: z.string(),
+  alphabet: z.enum(["ipa", "cmu"]),
+  phoneme: z.string(),
+});
+
+const AmbientSoundSchema = z.enum([
+  "coffee-shop",
+  "convention-hall",
+  "summer-outdoor",
+  "mountain-outdoor",
+  "static-noise",
+  "call-center",
+]);
+
+const AgentVoiceModelSchema = z.enum([
+  "eleven_turbo_v2",
+  "eleven_flash_v2",
+  "eleven_turbo_v2_5",
+  "eleven_flash_v2_5",
+  "eleven_multilingual_v2",
+  "eleven_v3",
+  "sonic-3",
+  "sonic-3-latest",
+  "sonic-3.5",
+  "tts-1",
+  "gpt-4o-mini-tts",
+  "speech-02-turbo",
+  "speech-2.8-turbo",
+  "s1",
+  "s2-pro",
+  "s2.1-pro",
+]);
+
+const PostCallAnalysisModelSchema = z.enum([
+  "gpt-4.1",
+  "gpt-4.1-mini",
+  "gpt-4.1-nano",
+  "gpt-5",
+  "gpt-5-mini",
+  "gpt-5-nano",
+  "gpt-5.1",
+  "gpt-5.2",
+  "gpt-5.4",
+  "gpt-5.4-mini",
+  "gpt-5.4-nano",
+  "gpt-5.5",
+  "claude-4.5-sonnet",
+  "claude-4.6-sonnet",
+  "claude-4.5-haiku",
+  "gemini-2.5-flash-lite",
+  "gemini-3.0-flash",
+  "gemini-3.1-flash-lite",
+]);
+
+const RetellTextModelSchema = z.enum([
+  "gpt-4.1",
+  "gpt-4.1-mini",
+  "gpt-4.1-nano",
+  "gpt-5",
+  "gpt-5-mini",
+  "gpt-5-nano",
+  "gpt-5.1",
+  "gpt-5.2",
+  "gpt-5.4",
+  "gpt-5.4-mini",
+  "gpt-5.4-nano",
+  "gpt-5.5",
+  "claude-4.5-sonnet",
+  "claude-4.6-sonnet",
+  "claude-4.5-haiku",
+  "gemini-2.5-flash-lite",
+  "gemini-3.0-flash",
+  "gemini-3.1-flash-lite",
+]);
+
+const RetellSpeechModelSchema = z.enum([
+  "gpt-realtime-2",
+  "gpt-realtime-1.5",
+  "gpt-realtime",
+  "gpt-realtime-mini",
+]);
+
+const RetellToolSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("end_call"),
+    name: z.string(),
+    description: z.string(),
+  }),
+  z.object({
+    type: z.literal("transfer_call"),
+    name: z.string(),
+    description: z.string(),
+    transfer_destination: z.discriminatedUnion("type", [
+      z.object({
+        type: z.literal("predefined"),
+        value: z.enum(["voicemail", "operator"]),
+        number: z.string(),
+      }),
+      z.object({
+        type: z.literal("inferred"),
+        description: z.string(),
+        prompt: z.string(),
+      }),
+    ]),
+  }),
+  z.object({
+    type: z.literal("check_availability_cal"),
+    name: z.string(),
+    description: z.string(),
+    calendar_url: z.string(),
+    cal_api_key: z.string(),
+    event_type_id: z.number(),
+  }),
+  z.object({
+    type: z.literal("book_appointment_cal"),
+    name: z.string(),
+    description: z.string(),
+    calendar_url: z.string(),
+    cal_api_key: z.string(),
+    event_type_id: z.number(),
+  }),
+  z.object({
+    type: z.literal("press_digit"),
+    name: z.string(),
+    description: z.string(),
+    digit: z.string(),
+  }),
+  z.object({
+    type: z.literal("custom"),
+    name: z.string(),
+    description: z.string(),
+    speak_after_execution: z.boolean(),
+    speak_during_execution: z.boolean(),
+    url: z.string(),
+  }),
+]);
+
+const RetellStateSchema = z.object({
+  name: z.string(),
+  state_prompt: z.string(),
+  edges: z
+    .array(
+      z.object({
+        destination_state_name: z.string(),
+        description: z.string(),
+        parameters: z
+          .object({
+            type: z.literal("object"),
+            properties: z.record(z.any()),
+            required: z.array(z.string()),
+          })
+          .optional(),
+      })
+    )
+    .optional(),
+  tools: z.array(RetellToolSchema).optional(),
+});
+
 export const CreateAgentInputSchema = z.object({
   response_engine: z.object({
     type: z.literal("retell-llm"),
@@ -181,39 +340,20 @@ export const CreateAgentInputSchema = z.object({
   }),
   voice_id: z.string().describe("ID of the voice to use"),
   agent_name: z.string().optional().describe("Name of the agent"),
-  voice_model: z
-    .enum([
-      "eleven_turbo_v2",
-      "eleven_flash_v2",
-      "eleven_turbo_v2_5",
-      "eleven_flash_v2_5",
-      "eleven_multilingual_v2",
-      "Play3.0-mini",
-      "PlayDialog",
-    ])
-    .optional(),
-  // fallback_voice_ids: z.array(z.string()).optional(),
-  // voice_temperature: z.number().optional(),
-  // voice_speed: z.number().optional(),
-  // volume: z.number().optional(),
-  // responsiveness: z.number().optional(),
-  // interruption_sensitivity: z.number().optional(),
-  // enable_backchannel: z.boolean().optional(),
-  // backchannel_frequency: z.number().optional(),
-  // backchannel_words: z.array(z.string()).optional(),
-  // reminder_trigger_ms: z.number().optional(),
-  // reminder_max_count: z.number().optional(),
-  // ambient_sound: z
-  //   .enum([
-  //     "coffee-shop",
-  //     "convention-hall",
-  //     "summer-outdoor",
-  //     "mountain-outdoor",
-  //     "static-noise",
-  //     "call-center",
-  //   ])
-  //   .optional(),
-  // ambient_sound_volume: z.number().optional(),
+  voice_model: AgentVoiceModelSchema.optional(),
+  fallback_voice_ids: z.array(z.string()).optional(),
+  voice_temperature: z.number().optional(),
+  voice_speed: z.number().optional(),
+  volume: z.number().optional(),
+  responsiveness: z.number().optional(),
+  interruption_sensitivity: z.number().optional(),
+  enable_backchannel: z.boolean().optional(),
+  backchannel_frequency: z.number().optional(),
+  backchannel_words: z.array(z.string()).optional(),
+  reminder_trigger_ms: z.number().optional(),
+  reminder_max_count: z.number().optional(),
+  ambient_sound: AmbientSoundSchema.optional(),
+  ambient_sound_volume: z.number().optional(),
   language: z
     .enum([
       "en-US",
@@ -236,31 +376,23 @@ export const CreateAgentInputSchema = z.object({
       "ko-KR",
     ])
     .optional(),
-  // webhook_url: z.string().optional(),
-  // boosted_keywords: z.array(z.string()).optional(),
-  // enable_transcription_formatting: z.boolean().optional(),
-  // opt_out_sensitive_data_storage: z.boolean().optional(),
-  // opt_in_signed_url: z.boolean().optional(),
-  // pronunciation_dictionary: z
-  //   .array(
-  //     z.object({
-  //       word: z.string(),
-  //       alphabet: z.enum(["ipa", "cmu"]),
-  //       phoneme: z.string(),
-  //     })
-  //   )
-  //   .optional(),
-  // normalize_for_speech: z.boolean().optional(),
-  // end_call_after_silence_ms: z.number().optional(),
-  // max_call_duration_ms: z.number().optional(),
-  // enable_voicemail_detection: z.boolean().optional(),
-  // voicemail_message: z.string().optional(),
-  // voicemail_detection_timeout_ms: z.number().optional(),
-  // post_call_analysis_data: z.array(AnalysisDataSchema).optional(),
-  // post_call_analysis_model: z.enum(["gpt-4o-mini", "gpt-4o"]).optional(),
-  // begin_message_delay_ms: z.number().optional(),
-  // ring_duration_ms: z.number().optional(),
-  // stt_mode: z.enum(["fast", "accurate"]).optional(),
+  webhook_url: z.string().optional(),
+  boosted_keywords: z.array(z.string()).optional(),
+  enable_transcription_formatting: z.boolean().optional(),
+  opt_out_sensitive_data_storage: z.boolean().optional(),
+  opt_in_signed_url: z.boolean().optional(),
+  pronunciation_dictionary: z.array(PronunciationDictionaryItemSchema).optional(),
+  normalize_for_speech: z.boolean().optional(),
+  end_call_after_silence_ms: z.number().optional(),
+  max_call_duration_ms: z.number().optional(),
+  enable_voicemail_detection: z.boolean().optional(),
+  voicemail_message: z.string().optional(),
+  voicemail_detection_timeout_ms: z.number().optional(),
+  post_call_analysis_data: z.array(AnalysisDataSchema).optional(),
+  post_call_analysis_model: PostCallAnalysisModelSchema.optional(),
+  begin_message_delay_ms: z.number().optional(),
+  ring_duration_ms: z.number().optional(),
+  stt_mode: z.enum(["fast", "accurate"]).optional(),
 });
 
 export const GetAgentInputSchema = z.object({
@@ -278,7 +410,7 @@ export const UpdateAgentInputSchema = z.object({
     .optional(),
   voice_id: z.string().optional(),
   agent_name: z.string().optional(),
-  voice_model: z.string().optional(),
+  voice_model: AgentVoiceModelSchema.nullable().optional(),
   fallback_voice_ids: z.array(z.string()).optional(),
   voice_temperature: z.number().optional(),
   voice_speed: z.number().optional(),
@@ -290,7 +422,7 @@ export const UpdateAgentInputSchema = z.object({
   backchannel_words: z.array(z.string()).optional(),
   reminder_trigger_ms: z.number().optional(),
   reminder_max_count: z.number().optional(),
-  ambient_sound: z.string().optional(),
+  ambient_sound: AmbientSoundSchema.nullable().optional(),
   ambient_sound_volume: z.number().optional(),
   language: z.string().optional(),
   webhook_url: z.string().optional(),
@@ -298,15 +430,7 @@ export const UpdateAgentInputSchema = z.object({
   enable_transcription_formatting: z.boolean().optional(),
   opt_out_sensitive_data_storage: z.boolean().optional(),
   opt_in_signed_url: z.boolean().optional(),
-  pronunciation_dictionary: z
-    .array(
-      z.object({
-        word: z.string(),
-        alphabet: z.enum(["ipa", "cmu"]),
-        phoneme: z.string(),
-      })
-    )
-    .optional(),
+  pronunciation_dictionary: z.array(PronunciationDictionaryItemSchema).nullable().optional(),
   normalize_for_speech: z.boolean().optional(),
   end_call_after_silence_ms: z.number().optional(),
   max_call_duration_ms: z.number().optional(),
@@ -314,7 +438,7 @@ export const UpdateAgentInputSchema = z.object({
   voicemail_message: z.string().optional(),
   voicemail_detection_timeout_ms: z.number().optional(),
   post_call_analysis_data: z.array(AnalysisDataSchema).optional(),
-  post_call_analysis_model: z.enum(["gpt-4o-mini", "gpt-4o"]).optional(),
+  post_call_analysis_model: PostCallAnalysisModelSchema.nullable().optional(),
   begin_message_delay_ms: z.number().optional(),
   ring_duration_ms: z.number().optional(),
   stt_mode: z.enum(["fast", "accurate"]).optional(),
@@ -330,7 +454,7 @@ export const AgentOutputSchema = z.object({
   agent_name: z.string().optional(),
   version: z.number(),
   voice_id: z.string(),
-  voice_model: z.string().optional(),
+  voice_model: AgentVoiceModelSchema.nullable().optional(),
   fallback_voice_ids: z.array(z.string()).optional(),
   voice_temperature: z.number().optional(),
   voice_speed: z.number().optional(),
@@ -342,7 +466,7 @@ export const AgentOutputSchema = z.object({
   backchannel_words: z.array(z.string()).optional(),
   reminder_trigger_ms: z.number().optional(),
   reminder_max_count: z.number().optional(),
-  ambient_sound: z.string().optional(),
+  ambient_sound: AmbientSoundSchema.nullable().optional(),
   ambient_sound_volume: z.number().optional(),
   language: z.string().optional(),
   webhook_url: z.string().optional(),
@@ -350,15 +474,7 @@ export const AgentOutputSchema = z.object({
   enable_transcription_formatting: z.boolean().optional(),
   opt_out_sensitive_data_storage: z.boolean().optional(),
   opt_in_signed_url: z.boolean().optional(),
-  pronunciation_dictionary: z
-    .array(
-      z.object({
-        word: z.string(),
-        alphabet: z.enum(["ipa", "cmu"]),
-        phoneme: z.string(),
-      })
-    )
-    .optional(),
+  pronunciation_dictionary: z.array(PronunciationDictionaryItemSchema).nullable().optional(),
   normalize_for_speech: z.boolean().optional(),
   end_call_after_silence_ms: z.number().optional(),
   max_call_duration_ms: z.number().optional(),
@@ -366,7 +482,7 @@ export const AgentOutputSchema = z.object({
   voicemail_message: z.string().optional(),
   voicemail_detection_timeout_ms: z.number().optional(),
   post_call_analysis_data: z.array(AnalysisDataSchema).optional(),
-  post_call_analysis_model: z.enum(["gpt-4o-mini", "gpt-4o"]).optional(),
+  post_call_analysis_model: PostCallAnalysisModelSchema.nullable().optional(),
   begin_message_delay_ms: z.number().optional(),
   ring_duration_ms: z.number().optional(),
   stt_mode: z.enum(["fast", "accurate"]).optional(),
@@ -468,24 +584,12 @@ export const KnowledgeBaseOutputSchema = z.object({
 
 export const CreateRetellLLMInputSchema = z.object({
   version: z.number().optional().describe("Version of the Retell LLM"),
-  model: z
-    .enum([
-      "gpt-4o",
-      "gpt-4o-mini",
-      "gpt-4.1",
-      "gpt-4.1-mini",
-      "gpt-4.1-nano",
-      "claude-3.7-sonnet",
-      "claude-3.5-haiku",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
-    ])
+  model: RetellTextModelSchema
     .optional()
     .describe(
-      "Select the underlying text LLM. If not set, would default to gpt-4o"
+      "Select the underlying text LLM. If not set, would default to gpt-4.1"
     ),
-  s2s_model: z
-    .enum(["gpt-4o-realtime", "gpt-4o-mini-realtime"])
+  s2s_model: RetellSpeechModelSchema
     .optional()
     .describe(
       "Select the underlying speech to speech model. Can only set this or model, not both"
@@ -514,142 +618,13 @@ export const CreateRetellLLMInputSchema = z.object({
   ),
   general_tools: z
     .array(
-      z.discriminatedUnion("type", [
-        z.object({
-          type: z.literal("end_call"),
-          name: z.string(),
-          description: z.string(),
-        }),
-        z.object({
-          type: z.literal("transfer_call"),
-          name: z.string(),
-          description: z.string(),
-          transfer_destination: z.discriminatedUnion("type", [
-            z.object({
-              type: z.literal("predefined"),
-              value: z.enum(["voicemail", "operator"]),
-              number: z.string(),
-            }),
-            z.object({
-              type: z.literal("inferred"),
-              description: z.string(),
-              prompt: z.string(),
-            }),
-          ]),
-        }),
-        z.object({
-          type: z.literal("check_availability_cal"),
-          name: z.string(),
-          description: z.string(),
-          calendar_url: z.string(),
-          cal_api_key: z.string(),
-          event_type_id: z.number(),
-        }),
-        z.object({
-          type: z.literal("book_appointment_cal"),
-          name: z.string(),
-          description: z.string(),
-          calendar_url: z.string(),
-          cal_api_key: z.string(),
-          event_type_id: z.number(),
-        }),
-        z.object({
-          type: z.literal("press_digit"),
-          name: z.string(),
-          description: z.string(),
-          digit: z.string(),
-        }),
-        z.object({
-          type: z.literal("custom"),
-          name: z.string(),
-          description: z.string(),
-          speak_after_execution: z.boolean(),
-          speak_during_execution: z.boolean(),
-          url: z.string(),
-        }),
-      ])
+      RetellToolSchema
     )
     .optional()
     .describe("A list of tools the model may call"),
   states: z
     .array(
-      z.object({
-        name: z.string(),
-        state_prompt: z.string(),
-        edges: z
-          .array(
-            z.object({
-              destination_state_name: z.string(),
-              description: z.string(),
-              parameters: z
-                .object({
-                  type: z.literal("object"),
-                  properties: z.record(z.any()),
-                  required: z.array(z.string()),
-                })
-                .optional(),
-            })
-          )
-          .optional(),
-        tools: z
-          .array(
-            z.discriminatedUnion("type", [
-              z.object({
-                type: z.literal("end_call"),
-                name: z.string(),
-                description: z.string(),
-              }),
-              z.object({
-                type: z.literal("transfer_call"),
-                name: z.string(),
-                description: z.string(),
-                transfer_destination: z.discriminatedUnion("type", [
-                  z.object({
-                    type: z.literal("predefined"),
-                    value: z.enum(["voicemail", "operator"]),
-                    number: z.string(),
-                  }),
-                  z.object({
-                    type: z.literal("inferred"),
-                    description: z.string(),
-                    prompt: z.string(),
-                  }),
-                ]),
-              }),
-              z.object({
-                type: z.literal("check_availability_cal"),
-                name: z.string(),
-                description: z.string(),
-                calendar_url: z.string(),
-                cal_api_key: z.string(),
-                event_type_id: z.number(),
-              }),
-              z.object({
-                type: z.literal("book_appointment_cal"),
-                name: z.string(),
-                description: z.string(),
-                calendar_url: z.string(),
-                cal_api_key: z.string(),
-                event_type_id: z.number(),
-              }),
-              z.object({
-                type: z.literal("press_digit"),
-                name: z.string(),
-                description: z.string(),
-                digit: z.string(),
-              }),
-              z.object({
-                type: z.literal("custom"),
-                name: z.string(),
-                description: z.string(),
-                speak_after_execution: z.boolean(),
-                speak_during_execution: z.boolean(),
-                url: z.string(),
-              }),
-            ])
-          )
-          .optional(),
-      })
+      RetellStateSchema
     )
     .optional()
     .describe("States of the LLM"),
@@ -680,68 +655,15 @@ export const GetRetellLLMInputSchema = z.object({
 export const UpdateRetellLLMInputSchema = z.object({
   llmId: z.string().describe("The ID of the Retell LLM to update"),
   version: z.number().optional(),
-  model: z
-    .enum([
-      "gpt-4o",
-      "gpt-4o-mini",
-      "gpt-4.1",
-      "gpt-4.1-mini",
-      "gpt-4.1-nano",
-      "claude-3.7-sonnet",
-      "claude-3.5-haiku",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
-    ])
-    .optional(),
-  s2s_model: z.enum(["gpt-4o-realtime", "gpt-4o-mini-realtime"]).optional(),
+  model: RetellTextModelSchema.optional(),
+  s2s_model: RetellSpeechModelSchema.optional(),
   model_temperature: z.number().optional(),
   model_high_priority: z.boolean().optional(),
   tool_call_strict_mode: z.boolean().optional(),
   general_prompt: z.string().optional(),
-  general_tools: z
-    .array(
-      z.object({
-        type: z.string(),
-        name: z.string(),
-        description: z.string(),
-      })
-    )
-    .optional(),
-  // states: z
-  //   .array(
-  //     z.object({
-  //       name: z.string(),
-  //       state_prompt: z.string(),
-  //       edges: z
-  //         .array(
-  //           z.object({
-  //             destination_state_name: z.string(),
-  //             description: z.string(),
-  //             parameters: z
-  //               .object({
-  //                 type: z.literal("object"),
-  //                 properties: z.record(z.any()),
-  //                 required: z.array(z.string()),
-  //               })
-  //               .optional(),
-  //           })
-  //         )
-  //         .optional(),
-  //       tools: z
-  //         .array(
-  //           z.object({
-  //             type: z.string(),
-  //             name: z.string(),
-  //             description: z.string(),
-  //             parameters: z.record(z.any()).optional(),
-  //           })
-  //         )
-  //         .optional(),
-  //     })
-  //   )
-  //   .nullable()
-  //   .optional(),
-  // starting_state: z.string().nullable().optional(),
+  general_tools: z.array(RetellToolSchema).nullable().optional(),
+  states: z.array(RetellStateSchema).nullable().optional(),
+  starting_state: z.string().nullable().optional(),
   begin_message: z.string().optional(),
   default_dynamic_variables: z.record(z.string()).optional(),
   knowledge_base_ids: z.array(z.string()).optional(),
@@ -756,51 +678,9 @@ export const RetellLLMOutputSchema = z.object({
   model_high_priority: z.boolean().optional(),
   tool_call_strict_mode: z.boolean().optional(),
   general_prompt: z.string().nullable().optional(),
-  general_tools: z
-    .array(
-      z.object({
-        type: z.string(),
-        name: z.string(),
-        description: z.string(),
-      })
-    )
-    .nullable()
-    .optional(),
-  // states: z
-  //   .array(
-  //     z.object({
-  //       name: z.string(),
-  //       state_prompt: z.string(),
-  //       edges: z
-  //         .array(
-  //           z.object({
-  //             destination_state_name: z.string(),
-  //             description: z.string(),
-  //             parameters: z
-  //               .object({
-  //                 type: z.literal("object"),
-  //                 properties: z.record(z.any()),
-  //                 required: z.array(z.string()),
-  //               })
-  //               .optional(),
-  //           })
-  //         )
-  //         .optional(),
-  //       tools: z
-  //         .array(
-  //           z.object({
-  //             type: z.string(),
-  //             name: z.string(),
-  //             description: z.string(),
-  //             parameters: z.record(z.any()).optional(),
-  //           })
-  //         )
-  //         .optional(),
-  //     })
-  //   )
-  //   .nullable()
-  //   .optional(),
-  // starting_state: z.string().nullable().optional(),
+  general_tools: z.array(RetellToolSchema).nullable().optional(),
+  states: z.array(RetellStateSchema).nullable().optional(),
+  starting_state: z.string().nullable().optional(),
   begin_message: z.string().nullable().optional(),
   default_dynamic_variables: z.record(z.string()).nullable().optional(),
   knowledge_base_ids: z.array(z.string()).nullable().optional(),
