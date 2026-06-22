@@ -11,7 +11,7 @@ import {
   transformAgentOutput,
   transformUpdateAgentInput,
 } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, normalizeListItems } from "./utils.js";
 
 export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
   server.tool(
@@ -20,7 +20,7 @@ export const registerAgentTools = (server: McpServer, retellClient: Retell) => {
     {},
     createToolHandler(async () => {
       const agents = await retellClient.agent.list();
-      return agents.map(transformAgentOutput);
+      return normalizeListItems(agents).map(transformAgentOutput);
     })
   );
 

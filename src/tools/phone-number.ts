@@ -7,7 +7,7 @@ import {
   UpdatePhoneNumberInputSchema,
 } from "../schemas/index.js";
 import { transformPhoneNumberOutput } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, normalizeListItems } from "./utils.js";
 
 export const registerPhoneNumberTools = (
   server: McpServer,
@@ -19,7 +19,7 @@ export const registerPhoneNumberTools = (
     {},
     createToolHandler(async () => {
       const phoneNumbers = await retellClient.phoneNumber.list();
-      return phoneNumbers.map(transformPhoneNumberOutput);
+      return normalizeListItems(phoneNumbers).map(transformPhoneNumberOutput);
     })
   );
 

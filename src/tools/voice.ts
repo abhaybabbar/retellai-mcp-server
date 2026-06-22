@@ -3,7 +3,7 @@ import Retell from "retell-sdk";
 
 import { GetVoiceInputSchema } from "../schemas/index.js";
 import { transformVoiceOutput } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, normalizeListItems } from "./utils.js";
 
 export const registerVoiceTools = (server: McpServer, retellClient: Retell) => {
   server.tool(
@@ -12,7 +12,7 @@ export const registerVoiceTools = (server: McpServer, retellClient: Retell) => {
     {},
     createToolHandler(async () => {
       const voices = await retellClient.voice.list();
-      return voices.map(transformVoiceOutput);
+      return normalizeListItems(voices).map(transformVoiceOutput);
     })
   );
 

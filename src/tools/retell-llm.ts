@@ -11,7 +11,7 @@ import {
   transformUpdateRetellLLMInput,
   transformRetellLLMOutput,
 } from "../transformers/index.js";
-import { createToolHandler } from "./utils.js";
+import { createToolHandler, normalizeListItems } from "./utils.js";
 
 export const registerRetellLLMTools = (
   server: McpServer,
@@ -23,7 +23,7 @@ export const registerRetellLLMTools = (
     {},
     createToolHandler(async () => {
       const llms = await retellClient.llm.list();
-      return llms.map(transformRetellLLMOutput);
+      return normalizeListItems(llms).map(transformRetellLLMOutput);
     })
   );
 
